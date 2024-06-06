@@ -1,11 +1,15 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+import sys
 import test_simulator as sim
 import database_handler as dbms
-
+import dummy_database as dummy
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 class App:
-    def __init__(self):
-        self.db = dbms.DBMS()
+    def __init__(self,  standalone: bool = False):
+        if not standalone:
+            self.db = dbms.DBMS()
+        else:
+            self.db = dummy.DBMS()
         self.app = Flask(__name__)
         self.sim: sim.SimulationHandler = None
         self.env_options = None
@@ -84,5 +88,7 @@ class App:
 
 
 if __name__ == '__main__':
-    app = App()
+    if sys.argv[1] == '-s':
+        print('Running in standalone mode')
+    app = App(sys.argv[1] == '-s')
     app.run()
