@@ -70,6 +70,13 @@ class App:
             self.db.end_series(request.json['Score'])
             return jsonify({"Status": "Success"})
 
+        @self.app.route('/undo-strike', methods=['GET'])
+        def undo_strike():
+            print("Request received to undo last strike") 
+            mesh = self.db.undo_strike()
+            self.sim.set_mesh(mesh)
+            return jsonify(mesh)
+
         @self.app.route('/press', methods=['PUT'])
         def execute_simulation():
             quaternion = request.json['Rotation']
@@ -80,7 +87,8 @@ class App:
             #execute simulation
             result  = self.sim.execute_simulation(hits, force, quaternion, translation_vector)
             #record action
-            self.db.record_action(translation_vector, quaternion, result)
+            final_mesh = self.sim.get_result_mesh()
+            self.db.record_action(translation_vector, quaternion, final_mesh)
             return jsonify(result)
 
     def run(self, host='127.0.0.1', port=5000):
@@ -88,7 +96,8 @@ class App:
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == '-s':
-        print('Running in standalone mode')
-    app = App(sys.argv[1] == '-s')
+    standalone = False
+    if len(sys.argv) > 1 and sys.argv[1] == '-s':
+        standalone = True
+    app = App(standalone=standalone)
     app.run()

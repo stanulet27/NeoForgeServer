@@ -81,4 +81,20 @@ class DBMS:
             cur.execute(query)
             self.conn.commit() # Only commit after the series is complete
             return True
+    def undo_strike(self):
+        # Undo the last strike in the database
+        query = f"DELETE FROM strike WHERE series_id = {self.current_series} AND step_number = {self.current_step}"
+        with self.conn.cursor() as cur:
+            cur.execute(query)
+        #return mesh from before the last strike
+        self.current_step -= 1
+        if self.current_step ==0:
+            query = f"SELECT mesh_definition FROM starting_meshes WHERE id = (SELECT start_mesh_id FROM part_series WHERE id = {self.current_series})"
+        else:
+            query = f"SELECT result FROM strike WHERE series_id = {self.current_series} AND step_number = {self.current_step}"
+        with self.conn.cursor() as cur:
+            cur.execute(query)
+            mesh = cur.fetchone()
+            return mesh[0]
+
     

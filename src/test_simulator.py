@@ -9,7 +9,12 @@ class SimulationHandler:
 
     def return_material(self) -> 'dict[str,object]':
         return self.material.get_dict()
+    
+    def set_mesh(self, mesh_data: 'dict[str,object]'):
+        self.mesh_data = mesh_data
 
+    def get_result_mesh(self) -> 'dict[str,object]':
+        return self.mesh_data
     
     def execute_simulation(self, 
                            hits: 'list[int]', 
