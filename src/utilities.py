@@ -82,3 +82,67 @@ def unwrap_points(points: 'list[np.ndarray[float,float]]') -> 'list[float]':
         unwrapped.append(points[i][1])
         unwrapped.append(points[i][2])
     return unwrapped
+
+import re
+import os
+
+from jax_fem.generate_mesh import get_meshio_cell_type,box_mesh,Mesh
+
+from scipy.spatial.transform import Rotation
+
+# SETUP/INITIALIZATION FUNCTIONS
+def create_next_run_folder(directory):
+    pattern = re.compile(r"^run_(\d+)$")
+    items = os.listdir(directory)
+    run_folders = [item for item in items if os.path.isdir(os.path.join(directory, item)) and pattern.match(item)]
+    run_folders.sort(key=lambda x: int(pattern.match(x).group(1)))
+    
+    if run_folders:
+        last_run_number = int(pattern.match(run_folders[-1]).group(1))
+        next_run_number = last_run_number + 1
+    else:
+        next_run_number = 1
+    
+    next_run_folder = f"run_{next_run_number:03d}"
+    next_run_folder_path = os.path.join(directory, next_run_folder)
+    os.makedirs(next_run_folder_path)
+    run_folders.append(next_run_folder)
+
+    return run_folders,next_run_folder_path
+
+def setup_data_dir(outputFolder='data/runs'):
+    if not os.path.exists(outputFolder):
+        os.makedirs(outputFolder)
+    _,run_path = create_next_run_folder(outputFolder)
+    return run_path
+
+def setup_starting_mesh(data_dir):
+    # Specify mesh-related information(first-order hexahedron element).
+    ele_type = 'HEX8'
+    cell_type = get_meshio_cell_type(ele_type)
+    Lx, Ly, Lz = 2., 2., 2.
+    meshio_mesh = box_mesh(Nx=9, Ny=9, Nz=9, Lx=Lx, Ly=Ly, Lz=Lz, data_dir=data_dir, ele_type=ele_type)
+    mesh = Mesh(meshio_mesh.points, meshio_mesh.cells_dict[cell_type])
+    # ADD NOISE
+    # noiseArr = onp.random.normal(0,0.01,mesh.points.shape)
+    # mesh.points = mesh.points + noiseArr
+    # ROTATE MESH
+    rot = Rotation.from_euler('x',50,degrees=True)
+    mesh.points = rot.apply(mesh.points)
+    # rot = Rotation.from_euler('y',10,degrees=True)
+    # mesh.points = rot.apply(mesh.points)
+    # mesh.points = rotate_points(mesh.points, [0,1,0], onp.degrees(onp.arctan(onp.sqrt(2)/2)), [Lx/2,Ly/2,Lz/2])
+    return mesh
+
+from Library.Plasticity import Plasticity
+from Library.create_press import create_flat_rect_press
+from Library.PlasticitySim import PlasticitySim
+
+def get_rectangular_hit_sim(size,offset,hit_depth,mesh,data_dir,step_size=0.03):
+    problem = Plasticity(mesh,vec=3,dim=3)
+    press = create_flat_rect_press(size,offset,[0.,0.,-step_size],mesh.points,vecs=[0,1,2])
+    table = create_flat_rect_press([10.,10.],[0.,0.],[0.,0.,1e-6],mesh.points,vecs=[0,1,2],isTable=True)
+    table.update_displacement([0.,0.,0.])
+    num_steps = int(min(abs(hit_depth/step_size),100))
+
+    return PlasticitySim(problem,[press,table],data_dir),num_steps

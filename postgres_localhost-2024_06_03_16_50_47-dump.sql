@@ -21,7 +21,7 @@ DROP DATABASE IF EXISTS forge_test;
 -- Name: forge_test; Type: DATABASE; Schema: -; Owner: postgres
 --
 
-CREATE DATABASE forge_test WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'English_United States.1252';
+CREATE DATABASE forge_test WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.UTF-8';
 
 
 ALTER DATABASE forge_test OWNER TO postgres;
