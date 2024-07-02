@@ -6,8 +6,8 @@ from shapely.geometry.polygon import Polygon
 from scipy.spatial.transform import Rotation
 from scipy.linalg import norm
 
-from Library.Press import Press
-from Library.Table import Table
+from NeoForgeServer.src.Library.press import Press
+from NeoForgeServer.src.Library.table import Table
 
 def create_flat_press(press_points,offset,displacement,mesh_points,vecs=[0,1,2],center=True,isTable=False):
     if center:

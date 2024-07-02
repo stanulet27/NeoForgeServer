@@ -5,6 +5,7 @@ import numpy as np
 import logging
 import warnings
 from vtk_plotting import create_gif
+import time
 
 class SimulationHandler:
     def __init__(self, mesh_data: 'dict[str,object]', material: p.Material):
@@ -37,13 +38,13 @@ class SimulationHandler:
 
         simulation,num_steps = u.get_rectangular_hit_sim([1,1],[-x for x in translation_vector[:2]],force,mesh,data_dir)
 
-        #logging.disable(logging.CRITICAL)
+        logging.disable(logging.CRITICAL)
         warnings.filterwarnings("ignore",message="Optimal rotation is not uniquely or poorly defined for the given sets of vectors.")
         for i in range(num_steps):
             print(f"STEP {i+1} OF {num_steps}")
-            #start = time.time()
+            start = time.time()
             simulation.update()
-            #print(f"Update: {time.time()-start}")
+            print(f"Update: {time.time()-start}")
 
             #print(simulation.presses[0].points)
             #print(simulation.presses[1].points)

@@ -127,18 +127,18 @@ def setup_starting_mesh(data_dir):
     # noiseArr = onp.random.normal(0,0.01,mesh.points.shape)
     # mesh.points = mesh.points + noiseArr
     # ROTATE MESH
-    rot = Rotation.from_euler('x',50,degrees=True)
-    mesh.points = rot.apply(mesh.points)
+    # rot = Rotation.from_euler('x',50,degrees=True)
+    # mesh.points = rot.apply(mesh.points)
     # rot = Rotation.from_euler('y',10,degrees=True)
     # mesh.points = rot.apply(mesh.points)
     # mesh.points = rotate_points(mesh.points, [0,1,0], onp.degrees(onp.arctan(onp.sqrt(2)/2)), [Lx/2,Ly/2,Lz/2])
     return mesh
 
-from Library.Plasticity import Plasticity
+from NeoForgeServer.src.Library.plasticity import Plasticity
 from Library.create_press import create_flat_rect_press
-from Library.PlasticitySim import PlasticitySim
+from NeoForgeServer.src.Library.plasticity_sim import PlasticitySim
 
-def get_rectangular_hit_sim(size,offset,hit_depth,mesh,data_dir,step_size=0.03):
+def get_rectangular_hit_sim(size,offset,hit_depth,mesh,data_dir,step_size=0.05):
     problem = Plasticity(mesh,vec=3,dim=3)
     press = create_flat_rect_press(size,offset,[0.,0.,-step_size],mesh.points,vecs=[0,1,2])
     table = create_flat_rect_press([10.,10.],[0.,0.],[0.,0.,1e-6],mesh.points,vecs=[0,1,2],isTable=True)
